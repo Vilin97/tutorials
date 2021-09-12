@@ -101,13 +101,18 @@ you can put your mouse cursor above the symbol and wait for one second.
 -- 0023
 example (f g : ℝ → ℝ) : even_fun f → even_fun (g ∘ f) :=
 begin
-  sorry
+  intros hf x,
+  calc (g∘f)(-x) = g(f (-x)) : rfl
+            ...  = g(f(x)) : by rw hf,
 end
 
 -- 0024
 example (f g : ℝ → ℝ) : odd_fun f → odd_fun g →  odd_fun (g ∘ f) :=
 begin
-  sorry
+  intros hf hg x,
+  calc (g ∘ f)(-x) = g(f(-x)) : rfl
+              ...  = g(-f(x)) : by rw hf
+              ...  = -g(f(x)) : by rw hg,
 end
 
 /-
@@ -195,7 +200,10 @@ end
 -- 0025
 example (f g : ℝ → ℝ) (hf : non_decreasing f) (hg : non_increasing g) : non_increasing (g ∘ f) :=
 begin
-  sorry
+  intros x y h,
+  apply hg,
+  apply hf,
+  exact h,
 end
 
 /-
@@ -236,7 +244,16 @@ end
 -- 0026
 example (x y : ℝ) : x^2 = y^2 → x = y ∨ x = -y :=
 begin
-  sorry
+  intro h,
+  have H : (x+y)*(x-y) = 0,
+  { ring_nf,
+    rwa [h, sub_self], },
+  rw mul_eq_zero at H,
+  cases H with h1 h2,
+  { right,
+    linarith, },
+  { left,
+    linarith, },
 end
 
 /-
@@ -247,7 +264,18 @@ In the next exercise, we can use:
 -- 0027
 example (f : ℝ → ℝ) : non_decreasing f ↔ ∀ x y, x < y → f x ≤ f y :=
 begin
-  sorry
+  split,
+  intros h x y hxy,
+  apply h,
+  linarith,
+  intros h x y hxy,
+  have p := eq_or_lt_of_le hxy,
+  cases p with p1 p2,
+  have heq : f x = f y,
+  exact congr_arg f p1,
+  linarith,
+  apply h,
+  exact p2,
 end
 
 /-
@@ -258,6 +286,14 @@ In the next exercise, we can use:
 -- 0028
 example (f : ℝ → ℝ) (h : non_decreasing f) (h' : ∀ x, f (f x) = x) : ∀ x, f x = x :=
 begin
-  sorry
+  intros x,
+  have p := le_total x (f x),
+  cases p with p1 p2,
+  have p' := h x (f x) p1,
+  rw h' at p',
+  linarith,
+  have p' := h (f x) x p2,
+  rw h' at p',
+  linarith,
 end
 
