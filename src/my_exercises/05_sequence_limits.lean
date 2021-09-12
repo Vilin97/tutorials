@@ -61,7 +61,12 @@ variables (u v w : ℕ → ℝ) (l l' : ℝ)
 -- 0033
 example : (∀ n, u n = l) → seq_limit u l :=
 begin
-  sorry
+  intros h ε he,
+  use 0,
+  intros n hn,
+  rw h n,
+  norm_num,
+  linarith,
 end
 
 /- When dealing with absolute values, we'll use lemmas:
@@ -72,6 +77,12 @@ abs_add (x y : ℝ) : |x + y| ≤ |x| + |y|
 
 abs_sub_comm (x y : ℝ) : |x - y| = |y - x|
 
+ge_max_iff (p q r) : r ≥ max p q  ↔ r ≥ p ∧ r ≥ q
+
+le_max_left p q : p ≤ max p q
+
+le_max_right p q : q ≤ max p q
+
 You should probably write them down on a sheet of paper that you keep at 
 hand since they are used in many exercises.
 -/
@@ -80,7 +91,14 @@ hand since they are used in many exercises.
 -- 0034
 example (hl : l > 0) : seq_limit u l → ∃ N, ∀ n ≥ N, u n ≥ l/2 :=
 begin
-  sorry
+  intro h,
+  specialize h (l/2) (by linarith),
+  cases h with N hN,
+  use N,
+  intros n hnN,
+  specialize hN n hnN,
+  rw abs_le at hN,
+  linarith,
 end
 
 /- 
@@ -151,8 +169,22 @@ example (hu : seq_limit u l) (hw : seq_limit w l)
 (h : ∀ n, u n ≤ v n)
 (h' : ∀ n, v n ≤ w n) : seq_limit v l :=
 begin
-  sorry
-
+  intros ε ε_pos,
+  specialize hu ε ε_pos,
+  specialize hw ε ε_pos,
+  cases hu with N1 hN1,
+  cases hw with N2 hN2,
+  use max N1 N2,
+  intros n hn,
+  rw ge_max_iff at hn,
+  rw abs_le,
+  split,
+  { have p1 := hN1 n (by linarith),
+    calc v n - l ≥ u n - l : by linarith [h n]
+           ... ≥ -ε : by linarith [abs_le.mp p1], },
+  { have p2 := hN2 n (by linarith),
+    calc v n - l ≤ w n - l : by linarith [h' n]
+           ... ≤ ε : by linarith [abs_le.mp p2], },
 end
 
 /- What about < ε? -/
