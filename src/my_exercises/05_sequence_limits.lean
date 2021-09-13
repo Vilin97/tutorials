@@ -192,7 +192,20 @@ end
 example (u l) : seq_limit u l ↔
  ∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - l| < ε :=
 begin
-  sorry
+  split,
+  { intros h ε ε_pos,
+    specialize h (ε/2) (by linarith),
+    cases h with N hN,
+    use N,
+    intros n hn,
+    linarith [hN n hn], },
+  { intros h ε ε_pos,
+    specialize h ε (by linarith),
+    cases h with N hN,
+    use N,
+    intros n hn,
+    linarith [hN n hn],
+  }
 end
 
 /- In the next exercise, we'll use
@@ -204,7 +217,22 @@ eq_of_abs_sub_le_all (x y : ℝ) : (∀ ε > 0, |x - y| ≤ ε) → x = y
 -- 0037
 example : seq_limit u l → seq_limit u l' → l = l' :=
 begin
-  sorry
+  intros hl hl',
+  apply eq_of_abs_sub_le_all l l',
+  intros ε ε_pos,
+  specialize hl (ε/2) (by linarith),
+  specialize hl' (ε/2) (by linarith),
+  cases hl with N hN,
+  cases hl' with N' hN',
+  let n := N + N',
+  specialize hN n (by linarith),
+  specialize hN' n (by linarith),
+  calc |l-l'| = |l - u n + u n - l'| : by ring_nf
+          ... ≤ |(l - u n) + (u n - l')| : by ring_nf
+          ... ≤ |l - u n| + |u n - l'| : abs_add (l - u n) (u n - l')
+          ... = |u n - l| + |u n - l'| : by rw abs_sub_comm l (u n)
+          ... ≤ ε/2 + ε/2 : by linarith
+          ... = ε : by linarith,
 end
 
 /-
@@ -220,6 +248,19 @@ def is_seq_sup (M : ℝ) (u : ℕ → ℝ) :=
 example (M : ℝ) (h : is_seq_sup M u) (h' : non_decreasing u) :
 seq_limit u M :=
 begin
-  sorry
+  intros ε ε_pos,
+  have h2 := h.right ε ε_pos,
+  cases h2 with N hN,
+  use N,
+  intros n hn,
+  have p := h' N n hn,
+  have lb : u n - M ≥ -ε,
+    linarith,
+  have ub : u n - M ≤ ε,
+    linarith [h.left n],
+  rw abs_le,
+  split,
+    linarith,
+    linarith,
 end
 
