@@ -93,8 +93,7 @@ begin
   specialize hN (N+N') (by linarith),
   specialize hN' (N+N') (by linarith),
   rw abs_le at hN',
-
-
+  linarith,
 end
 
 def nondecreasing_seq (u : ℕ → ℝ) := ∀ n m, n ≤ m → u n ≤ u m
@@ -103,7 +102,19 @@ def nondecreasing_seq (u : ℕ → ℝ) := ∀ n m, n ≤ m → u n ≤ u m
 example (u : ℕ → ℝ) (l : ℝ) (h : seq_limit u l) (h' : nondecreasing_seq u) :
   ∀ n, u n ≤ l :=
 begin
-  sorry
+  by_contradiction H,
+  push_neg at H,
+  cases H with N hN,
+  set ε := u N - l with hε,
+  cases h (ε/2) (by linarith) with N' hN',
+  set n := N + N' with hn,
+  specialize hN' n (by linarith),
+  clear h,
+  have key : l + ε ≤ u n,
+    calc l+ε = u N : by {rw hε, ring}
+         ... ≤ u n : h' N n (by linarith),
+  rw abs_le at hN',
+  linarith,
 end
 
 /-
@@ -136,7 +147,10 @@ but we won't need this.
 example {A : set ℝ} {x : ℝ} (hx : is_sup A x) :
 ∀ y, y < x → ∃ a ∈ A, y < a :=
 begin
-  sorry
+  intro y,
+  contrapose!,
+  intro h,
+  exact hx.right y h,
 end
 
 /-
@@ -148,13 +162,31 @@ exercise below.
 lemma le_of_le_add_all' {x y : ℝ} :
   (∀ ε > 0, y ≤ x + ε) →  y ≤ x :=
 begin
-  sorry
+  contrapose!,
+  intro h,
+  use (y-x)/2,
+  exact ⟨(by linarith), (by linarith)⟩,
 end
 
 -- 0070
 example {x y : ℝ} {u : ℕ → ℝ} (hu : seq_limit u x)
   (ineg : ∀ n, u n ≤ y) : x ≤ y :=
 begin
-  sorry
+  -- revert ineg,
+  -- contrapose!,
+  -- intro h,
+  -- cases hu ((x - y)/2) (by linarith) with N hN,
+  -- use N,
+  -- specialize hN N (by linarith),
+  -- rw abs_le at hN,
+  -- calc y < y/2 + x/2 : by linarith
+  --    ... ≤ u N : by linarith,
+  apply le_of_le_add_all,
+  intros ε ε_pos,
+  cases hu ε ε_pos with N hN,
+  specialize hN N (by linarith),
+  specialize ineg N,
+  rw abs_le at hN,
+  linarith,
 end
 
