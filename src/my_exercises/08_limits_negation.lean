@@ -22,19 +22,19 @@ variables (u : ℕ → ℝ) (f : ℝ → ℝ) (x₀ l : ℝ)
 /- Negation of "u tends to l" -/
 -- 0062
 example : ¬ (∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - l| ≤ ε) ↔
-sorry
+∃ ε > 0, ∀ N, ∃ n ≥ N, |u n - l| > ε
 :=
 begin
-  sorry
+  check_me,
 end
 
 /- Negation of "f is continuous at x₀" -/
 -- 0063
 example : ¬ (∀ ε > 0, ∃ δ > 0, ∀ x, |x - x₀| ≤ δ →  |f x - f x₀| ≤ ε) ↔
-sorry
+∃ ε > 0, ∀ δ > 0, ∃ x, |x-x₀| ≤ δ ∧ |f x - f x₀| > ε
 :=
 begin
-  sorry
+  check_me,
 end
 
 /-
@@ -48,19 +48,19 @@ Also, `∃ x x', ...` is the abbreviation of `∃ x, ∃ x', ...`.
 /- Negation of "f is uniformly continuous on ℝ" -/
 -- 0064
 example : ¬ (∀ ε > 0, ∃ δ > 0, ∀ x x', |x' - x| ≤ δ →  |f x' - f x| ≤ ε) ↔
-sorry
+∃ ε > 0, ∀ δ > 0, ∃ x x', |x' - x| ≤ δ ∧ |f x' - f x| > ε
 :=
 begin
-  sorry
+  check_me,
 end
 
 /- Negation of "f is sequentially continuous at x₀" -/
 -- 0065
 example : ¬ (∀ u : ℕ → ℝ, (∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - x₀| ≤ ε) → (∀ ε > 0, ∃ N, ∀ n ≥ N, |(f ∘ u) n - f x₀| ≤ ε))  ↔
-sorry
+∃ u : ℕ → ℝ, (∀ ε > 0, ∃ N, ∀ n ≥ N, |u n - x₀| ≤ ε) ∧ (∃ ε > 0, ∀ N, ∃ n ≥ N, |(f ∘ u) n - f x₀| > ε)
 :=
 begin
-  sorry
+  check_me,
 end
 end
 
@@ -85,7 +85,16 @@ def tendsto_infinity (u : ℕ → ℝ) := ∀ A, ∃ N, ∀ n ≥ N, u n ≥ A
 -- 0066
 example {u : ℕ → ℝ} : tendsto_infinity u → ∀ l, ¬ seq_limit u l :=
 begin
-  sorry
+  contrapose!,
+  intros h1 h2,
+  cases h1 with l hl,
+  cases h2 (l+1) with N hN,
+  cases hl (1/2) (by linarith) with N' hN',
+  specialize hN (N+N') (by linarith),
+  specialize hN' (N+N') (by linarith),
+  rw abs_le at hN',
+
+
 end
 
 def nondecreasing_seq (u : ℕ → ℝ) := ∀ n m, n ≤ m → u n ≤ u m
