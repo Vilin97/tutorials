@@ -30,7 +30,14 @@ Let's start with a variation on a known exercise.
 lemma le_lim {x y : ℝ} {u : ℕ → ℝ} (hu : seq_limit u x)
   (ineg : ∃ N, ∀ n ≥ N, y ≤ u n) : y ≤ x :=
 begin
-  sorry
+  apply le_of_le_add_all,
+  intros ε ε_pos,
+  cases hu ε ε_pos with N hN,
+  cases ineg with N' hN',
+  specialize hN (N + N') (by linarith),
+  specialize hN' (N + N') (by linarith),
+  rw abs_le at hN,
+  linarith,
 end
 
 /-
@@ -84,19 +91,38 @@ begin
   { intro h,
     split,
     {
-      sorry
+      exact h.left,
     },
-    { have : ∀ n : ℕ, ∃ a ∈ A, x - 1/(n+1) < a,
+    { have : ∀ n : ℕ, ∃ a ∈ A, x - 1/(n+1) ≤ a,
       { intros n,
-        have : 1/(n+1 : ℝ) > 0,
+        have k1 : 1/(n+1 : ℝ) > 0,
           exact nat.one_div_pos_of_nat,
-        sorry
+        unfold is_sup at h,
+        by_contradiction H,
+        push_neg at H,
+        set y := x - 1/2*(1/(n+1)) with hy,
+        have k3 : y < x,
+          linarith,
+        have uby : upper_bound A y,
+          intros a ha,
+          linarith [H a ha],
+        have k4 := h.right y uby,
+        linarith,
       },
       choose u hu using this,
       sorry
   } },
   { rintro ⟨maj, u, limu, u_in⟩, 
-    sorry
+    split,
+    exact maj,
+    intros y hy,
+    apply le_of_le_add_all,
+    intros ε ε_pos,
+    cases limu ε ε_pos with N hN,
+    specialize hN N (by linarith),
+    specialize hy (u N) (u_in N),
+    rw abs_le at hN,
+    linarith,
   },
 end
 
